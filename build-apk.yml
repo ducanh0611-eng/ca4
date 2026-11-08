@@ -1,0 +1,85 @@
+name: Build CarNaviLauncher APK
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.7'
+        cache-disabled: true
+
+    - name: Locate Android Project and Prepare Build
+      id: locate
+      run: |
+        # If user uploaded CarNaviLauncher.zip or any zip file, unzip it automatically!
+        ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" | head -n 1)
+        if [ -n "$ZIP_FILE" ]; then
+          echo "Found zip archive $ZIP_FILE, unpacking..."
+          unzip -o "$ZIP_FILE"
+        fi
+
+        find . -name "gradlew" -exec chmod +x {} +
+        
+        echo "=== Locating Android Project Root ==="
+        MANIFEST=$(find . -name "AndroidManifest.xml" | head -n 1)
+        if [ -z "$MANIFEST" ]; then
+          echo "ERROR: Could not find AndroidManifest.xml in the repository!"
+          find . -maxdepth 4 -not -path '*/.*'
+          exit 1
+        fi
+        
+        APP_DIR=$(dirname $(dirname $(dirname "$MANIFEST")))
+        PROJECT_ROOT=$(dirname "$APP_DIR")
+        if [ -z "$PROJECT_ROOT" ] || [ "$PROJECT_ROOT" = "." ]; then
+          PROJECT_ROOT="."
+        fi
+        
+        echo "Project root detected at: $PROJECT_ROOT"
+        echo "project_root=$PROJECT_ROOT" >> $GITHUB_OUTPUT
+        
+        cd "$PROJECT_ROOT"
+        mkdir -p gradle
+        echo "W3ZlcnNpb25zXQphZ3AgPSAiOC41LjIiCmtvdGxpbiA9ICIxLjkuMjQiCmNvcmVLdHggPSAiMS4xMy4xIgphcHBjb21wYXQgPSAiMS43LjAiCm1hdGVyaWFsID0gIjEuMTIuMCIKY29uc3RyYWludGxheW91dCA9ICIyLjEuNCIKd2Via2l0ID0gIjEuMTEuMCIKCltsaWJyYXJpZXNdCmFuZHJvaWR4LWNvcmUta3R4ID0geyBncm91cCA9ICJhbmRyb2lkeC5jb3JlIiwgbmFtZSA9ICJjb3JlLWt0eCIsIHZlcnNpb24ucmVmID0gImNvcmVLdHgiIH0KYW5kcm9pZHgtYXBwY29tcGF0ID0geyBncm91cCA9ICJhbmRyb2lkeC5hcHBjb21wYXQiLCBuYW1lID0gImFwcGNvbXBhdCIsIHZlcnNpb24ucmVmID0gImFwcGNvbXBhdCIgfQptYXRlcmlhbCA9IHsgZ3JvdXAgPSAiY29tLmdvb2dsZS5hbmRyb2lkLm1hdGVyaWFsIiwgbmFtZSA9ICJtYXRlcmlhbCIsIHZlcnNpb24ucmVmID0gIm1hdGVyaWFsIiB9CmFuZHJvaWR4LWNvbnN0cmFpbnRsYXlvdXQgPSB7IGdyb3VwID0gImFuZHJvaWR4LmNvbnN0cmFpbnRsYXlvdXQiLCBuYW1lID0gImNvbnN0cmFpbnRsYXlvdXQiLCB2ZXJzaW9uLnJlZiA9ICJjb25zdHJhaW50bGF5b3V0IiB9CmFuZHJvaWR4LXdlYmtpdCA9IHsgZ3JvdXAgPSAiYW5kcm9pZHgud2Via2l0IiwgbmFtZSA9ICJ3ZWJraXQiLCB2ZXJzaW9uLnJlZiA9ICJ3ZWJraXQiIH0KCltwbHVnaW5zXQphbmRyb2lkLWFwcGxpY2F0aW9uID0geyBpZCA9ICJjb20uYW5kcm9pZC5hcHBsaWNhdGlvbiIsIHZlcnNpb24ucmVmID0gImFncCIgfQprb3RsaW4tYW5kcm9pZCA9IHsgaWQgPSAib3JnLmpldGJyYWlucy5rb3RsaW4uYW5kcm9pZCIsIHZlcnNpb24ucmVmID0gImtvdGxpbiIgfQo=" | base64 -d > gradle/libs.versions.toml
+
+        if [ ! -s "gradle/wrapper/gradle-wrapper.jar" ]; then
+          echo "Regenerating gradle-wrapper..."
+          gradle wrapper --gradle-version 8.7
+        fi
+
+    - name: Build Debug APK
+      run: |
+        PROJECT_ROOT="${{ steps.locate.outputs.project_root }}"
+        cd "$PROJECT_ROOT"
+        
+        echo "Building Android APK in: $PWD"
+        if [ -s "gradle/wrapper/gradle-wrapper.jar" ]; then
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace || ./gradlew assembleDebug --no-daemon --stacktrace
+        else
+          gradle :app:assembleDebug --no-daemon --stacktrace || gradle assembleDebug --no-daemon --stacktrace
+        fi
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: CarNaviLauncher-Debug-APK
+        path: "**/app/build/outputs/apk/debug/*.apk"
