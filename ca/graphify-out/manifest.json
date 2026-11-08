@@ -1,0 +1,44 @@
+{
+  ".github/workflows/build-apk.yml": {
+    "mtime": 1794144121.0857406,
+    "seen": 1794144296.2549877,
+    "ast_hash": "b0e4442cd1aedd2aecd8b076e41bb77b",
+    "semantic_hash": "b0e4442cd1aedd2aecd8b076e41bb77b"
+  },
+  "app/build.gradle.kts": {
+    "mtime": 1794143894.730225,
+    "seen": 1794144296.2549946,
+    "ast_hash": "b16933e608b84ae732ebfa9d99ce59f5",
+    "semantic_hash": "b16933e608b84ae732ebfa9d99ce59f5"
+  },
+  "app/src/main/assets/js/app.js": {
+    "mtime": 1794144115.5654755,
+    "seen": 1794144296.2549973,
+    "ast_hash": "c5066eae7dc3d89b05f111e8ffb70953",
+    "semantic_hash": "c5066eae7dc3d89b05f111e8ffb70953"
+  },
+  "app/src/main/java/com/carnavi/launcher/MainActivity.kt": {
+    "mtime": 1794143941.3192413,
+    "seen": 1794144296.2549984,
+    "ast_hash": "b539a49bb93f97d8ec90fc7c2f589487",
+    "semantic_hash": "b539a49bb93f97d8ec90fc7c2f589487"
+  },
+  "build.gradle.kts": {
+    "mtime": 1794143879.6338415,
+    "seen": 1794144296.2549996,
+    "ast_hash": "d5956a49876eb1b1f756989d06759a2c",
+    "semantic_hash": "d5956a49876eb1b1f756989d06759a2c"
+  },
+  "gradlew": {
+    "mtime": 1793598543.7305696,
+    "seen": 1794144296.2550008,
+    "ast_hash": "ca5040d3dabc9d939760bb6b3d505ecf",
+    "semantic_hash": "ca5040d3dabc9d939760bb6b3d505ecf"
+  },
+  "settings.gradle.kts": {
+    "mtime": 1794143873.8128,
+    "seen": 1794144296.2550023,
+    "ast_hash": "1388d53a45dabd0114e30682c40828a8",
+    "semantic_hash": "1388d53a45dabd0114e30682c40828a8"
+  }
+}
