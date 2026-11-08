@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Car Navi Launcher</title>
+  
+  <!-- Leaflet CSS for Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter / Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-light">
+
+  <div class="launcher-container">
+    
+    <!-- LEFT NAVIGATION DOCK -->
+    <nav class="nav-dock">
+      <!-- NEW: NÚT QUAY LẠI MÀN HÌNH CHÍNH (HOME) -->
+      <button class="dock-btn btn-home active" id="btnHome" title="Màn hình chính / Về trang chủ">
+        <i class="fa-solid fa-house"></i>
+      </button>
+
+      <button class="dock-btn btn-nav" id="btnNav" title="Bản đồ dẫn đường">
+        <i class="fa-solid fa-location-arrow"></i>
+      </button>
+
+      <button class="dock-btn btn-apps" id="btnApps" title="Danh sách ứng dụng xe">
+        <div class="grid-icon">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+      </button>
+
+      <button class="dock-btn btn-mic" id="btnMic" title="Trợ lý giọng nói">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+
+      <button class="dock-btn btn-theme" id="btnTheme" title="Đổi giao diện Sáng / Tối">
+        <i class="fa-solid fa-shirt"></i>
+      </button>
+
+      <button class="dock-btn btn-settings" id="btnSettings" title="Cài đặt hệ thống">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+
+      <div class="dock-spacer"></div>
+
+      <!-- YouTube Quick Toggle Button -->
+      <button class="dock-btn btn-youtube" id="btnYoutube" title="Mở YouTube bên cạnh bản đồ">
+        <i class="fa-brands fa-youtube"></i>
+      </button>
+
+      <!-- Music Quick Toggle Button -->
+      <button class="dock-btn btn-music" id="btnMusic" title="Mở nhạc lưu trong máy">
+        <div class="vinyl-disc">
+          <div class="vinyl-inner"></div>
+        </div>
+      </button>
+    </nav>
+
+    <!-- LEFT WIDGET COLUMN (Clock, Route, Mini Player) -->
+    <aside class="widgets-column" id="widgetsCol">
+      
+      <!-- TOP WIDGET: Clock & Location & Weather -->
+      <div class="widget-card card-clock-location">
+        <div class="clock-display" id="clockDisplay">15:40</div>
+        
+        <div class="location-box" id="locationBox" title="Bấm để cập nhật lại vị trí GPS">
+          <div class="location-street" id="locationStreet">Đường Trần Trọng Kim</div>
+          <div class="location-sub" id="locationSub">Phường Thạnh Mỹ Tây</div>
+          <div class="location-city" id="locationCity">TP. Hồ Chí Minh</div>
+        </div>
+
+        <div class="weather-row" id="weatherRow">
+          <span class="weather-icon"><i class="fa-solid fa-cloud-sun text-warning"></i></span>
+          <span class="weather-temp" id="weatherTemp">34°C</span>
+          <span class="weather-desc" id="weatherDesc">Có Mây</span>
+        </div>
+      </div>
+
+      <!-- MIDDLE WIDGET: Route Info (ETA & Distance) -->
+      <div class="widget-card card-route-info" id="cardRoute">
+        <div class="route-item">
+          <span class="route-val" id="routeTime">4 phút</span>
+        </div>
+        <div class="route-divider"></div>
+        <div class="route-item">
+          <span class="route-val" id="routeDist">3.1km</span>
+        </div>
+      </div>
+
+      <!-- BOTTOM WIDGET: Mini Music Player -->
+      <div class="widget-card card-mini-player" id="cardMiniPlayer">
+        <div class="player-top">
+          <div class="player-thumb-wrap">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150&q=80" alt="Album Art" class="player-thumb" id="miniThumb">
+            <div class="mini-equalizer" id="miniEq">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="player-meta">
+            <div class="player-title" id="miniTitle">ZungZangZungZe</div>
+            <div class="player-artist" id="miniArtist">Cheng, Han Sara</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="player-progress-bar" id="miniProgressBar">
+          <div class="player-progress-fill" id="miniProgressFill" style="width: 35%;"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="player-controls">
+          <button class="ctrl-btn" id="miniPrevBtn" title="Bài trước">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button class="ctrl-btn ctrl-play" id="miniPlayBtn" title="Phát / Dừng">
+            <i class="fa-solid fa-play" id="miniPlayIcon"></i>
+          </button>
+          <button class="ctrl-btn" id="miniNextBtn" title="Bài kế tiếp">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN STAGE / CONTENT AREA (Map & Split Tab Media) -->
+    <main class="main-stage" id="mainStage">
+      
+      <!-- SPLIT MEDIA PANEL (Appears side-by-side with map when YouTube or Local Music is opened) -->
+      <section class="split-media-panel" id="splitMediaPanel">
+        
+        <!-- Media Header Bar with Back-to-Home and Tabs -->
+        <div class="split-panel-header">
+          <!-- NÚT QUAY LẠI MÀN HÌNH CHÍNH / BẢN ĐỒ -->
+          <button class="btn-back-home" id="btnBackFromMedia" title="Trở về màn hình bản đồ chính">
+            <i class="fa-solid fa-house"></i> <span>Màn hình chính</span>
+          </button>
+
+          <div class="media-tabs">
+            <button class="tab-btn active" id="tabYoutubeBtn">
+              <i class="fa-brands fa-youtube"></i> YouTube
+            </button>
+            <button class="tab-btn" id="tabMusicBtn">
+              <i class="fa-solid fa-music"></i> Nhạc Trong Máy
+            </button>
+          </div>
+          <div class="media-header-actions">
+            <button class="icon-tool-btn" id="btnExpandMedia" title="Phóng to / Thu nhỏ">
+              <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+            </button>
+            <button class="icon-tool-btn" id="btnCloseMedia" title="Đóng panel media">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content 1: YouTube View (Sửa triệt để lỗi 153) -->
+        <div class="media-tab-content active" id="youtubeTabContent">
+          <div class="yt-search-bar">
+            <input type="text" id="ytSearchInput" placeholder="Tìm kiếm video YouTube..." value="nhạc trẻ remix 2026">
+            <button id="ytSearchSubmit" title="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+
+          <div class="yt-mode-selector">
+            <button class="chip-mode active" id="btnYtModeWeb" title="Không bị chặn lỗi 153">
+              <i class="fa-solid fa-globe"></i> YouTube Web
+            </button>
+            <button class="chip-mode" id="btnYtModeMusic" title="Nhạc YouTube Music">
+              <i class="fa-solid fa-headphones"></i> YT Music
+            </button>
+            <button class="chip-mode" id="btnYtModeEmbed" title="Trình phát Iframe">
+              <i class="fa-solid fa-film"></i> Iframe Player
+            </button>
+          </div>
+
+          <div class="yt-quick-keywords">
+            <button class="chip" data-query="nhạc remix xe hơi">Remix Xe Hơi</button>
+            <button class="chip" data-query="nhạc lofi chill lái xe">Lofi Lái Xe</button>
+            <button class="chip" data-query="nhạc trữ tình bolero hay nhất">Bolero</button>
+            <button class="chip" data-query="tin tức việt nam mới nhất">Tin Tức</button>
+          </div>
+
+          <!-- YouTube Player Container (Sửa lỗi 153 bằng m.youtube.com và referrerpolicy) -->
+          <div class="yt-frame-container">
+            <iframe 
+              id="ytIframe" 
+              src="https://m.youtube.com/results?search_query=nhac+tre+remix+2026" 
+              title="YouTube video player" 
+              frameborder="0" 
+              referrerpolicy="no-referrer-when-downgrade"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowfullscreen>
+            </iframe>
+          </div>
+          
+          <div class="yt-bottom-bar">
+            <button class="btn-sm" id="btnOpenYtHome"><i class="fa-solid fa-house-chimney"></i> Trang chủ YouTube</button>
+            <button class="btn-sm" id="btnReloadYt"><i class="fa-solid fa-arrows-rotate"></i> Tải lại</button>
+            <span class="yt-status"><i class="fa-solid fa-circle text-success pulse"></i> Sẵn sàng phát</span>
+          </div>
+        </div>
+
+        <!-- Content 2: Local Music Player View -->
+        <div class="media-tab-content" id="musicTabContent">
+          <div class="local-music-header">
+            <div class="local-music-actions">
+              <button class="btn-primary-sm" id="btnScanMusic">
+                <i class="fa-solid fa-arrows-rotate"></i> Quét Nhạc Trong Máy
+              </button>
+              <label class="btn-secondary-sm" for="localFileInput">
+                <i class="fa-solid fa-folder-open"></i> Chọn Thư Mục / File
+              </label>
+              <input type="file" id="localFileInput" accept="audio/*" multiple style="display:none;">
+            </div>
+            <div class="search-music-wrap">
+              <input type="text" id="musicSearchInput" placeholder="Tìm tên bài hát hoặc ca sĩ...">
+            </div>
+          </div>
+
+          <!-- Local Playlist View -->
+          <div class="playlist-container" id="playlistContainer">
+            <!-- Playlist items injected dynamically -->
+          </div>
+
+          <!-- Active Song Bar in Local Tab -->
+          <div class="active-song-bar">
+            <div class="active-song-info">
+              <span class="song-now-playing" id="tabSongTitle">ZungZangZungZe</span>
+              <span class="song-now-artist" id="tabSongArtist">Cheng, Han Sara</span>
+            </div>
+            <div class="active-song-time" id="tabSongTime">01:15 / 03:40</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- MAP CONTAINER -->
+      <section class="map-section" id="mapSection">
+        
+        <!-- Interactive Leaflet / Web Map -->
+        <div id="leafletMap" class="map-view active"></div>
+
+        <!-- External Web Map Iframe (for Google Maps, Vietmap Live, Waze, Custom URL) -->
+        <iframe id="externalMapFrame" class="map-view" style="display:none;" frameborder="0" allowfullscreen></iframe>
+
+        <!-- HUD: Speed Limit Circle Sign (Top Left) -->
+        <div class="hud-speed-limit" id="hudSpeedLimit" title="Bấm để chỉnh tốc độ giới hạn">
+          <span class="limit-number" id="speedLimitNumber">50</span>
+        </div>
+
+        <!-- HUD: Current Speedometer (Below Speed Limit) -->
+        <div class="hud-speedometer" id="hudSpeedometer">
+          <span class="speed-number" id="currentSpeedVal">0</span>
+          <span class="speed-unit">km/h</span>
+        </div>
+
+        <!-- HUD: GPS STATUS BADGE (Top Center/Left) -->
+        <div class="hud-gps-badge" id="hudGpsBadge" title="Bấm để cập nhật lại vị trí GPS ngay">
+          <i class="fa-solid fa-location-crosshairs" id="gpsStatusIcon"></i>
+          <span id="gpsStatusText">Đang tìm vị trí GPS...</span>
+        </div>
+
+        <!-- HUD: Floating Map Source Selector & Controls (Top Right) -->
+        <div class="hud-top-controls">
+          <div class="source-badge" id="sourceBadge" title="Nguồn bản đồ hiện tại">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span id="currentSourceLabel">OSM 3D Map</span>
+            <i class="fa-solid fa-chevron-down ms-1"></i>
+          </div>
+          
+          <button class="hud-tool-btn" id="btnToggleSplit" title="Mở YouTube / Nhạc cạnh bản đồ">
+            <i class="fa-solid fa-table-columns"></i>
+          </button>
+        </div>
+
+        <!-- Dropdown Menu for Quick Map Source Switch -->
+        <div class="source-dropdown" id="sourceDropdown">
+          <div class="dropdown-header">Chọn nguồn bản đồ:</div>
+          <button class="dropdown-item active" data-source="osm">
+            <i class="fa-solid fa-map text-primary"></i> OpenStreetMap Vector 3D (Chuẩn GPS)
+          </button>
+          <button class="dropdown-item" data-source="gmaps">
+            <i class="fa-brands fa-google text-danger"></i> Google Maps Live Dẫn Đường
+          </button>
+          <button class="dropdown-item" data-source="vietmap">
+            <i class="fa-solid fa-diamond-turn-right text-success"></i> Vietmap Live Web
+          </button>
+          <button class="dropdown-item" data-source="waze">
+            <i class="fa-solid fa-compass text-info"></i> Waze Báo Kẹt Xe & Cảnh Báo
+          </button>
+          <button class="dropdown-item" data-source="custom">
+            <i class="fa-solid fa-link text-warning"></i> Nhập link bản đồ riêng (Custom URL)
+          </button>
+        </div>
+
+        <!-- HUD: Map Controls (Bottom Right: Zoom & Center) -->
+        <div class="hud-map-controls">
+          <button class="map-ctrl-btn" id="btnRefreshGps" title="Lấy lại vị trí GPS chính xác ngay">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+          <button class="map-ctrl-btn" id="btnRecenter" title="Về vị trí xe của tôi">
+            <i class="fa-solid fa-location-crosshairs"></i>
+          </button>
+          <button class="map-ctrl-btn" id="btnZoomIn" title="Phóng to">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button class="map-ctrl-btn" id="btnZoomOut" title="Thu nhỏ">
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- SETTINGS MODAL DIALOG -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <button class="btn-modal-back" id="btnBackSettingsTop">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </button>
+        <h3><i class="fa-solid fa-gear me-2"></i> Cài Đặt Hệ Thống</h3>
+        <button class="modal-close" id="btnCloseSettings"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="setting-group">
+          <label class="setting-label">Nguồn bản đồ dẫn đường:</label>
+          <select id="settingMapSource" class="setting-select">
+            <option value="osm">OpenStreetMap 3D Tile (Khuyên dùng - Nhanh, chuẩn GPS)</option>
+            <option value="gmaps">Google Maps Dẫn Đường (Theo tọa độ xe)</option>
+            <option value="vietmap">Vietmap Live (Web Viewer)</option>
+            <option value="waze">Waze Báo Kẹt Xe & Cảnh Báo Giao Thông</option>
+            <option value="custom">Tuỳ chỉnh liên kết (Custom Map URL)</option>
+          </select>
+        </div>
+
+        <div class="setting-group" id="customUrlGroup" style="display:none;">
+          <label class="setting-label">Đường dẫn bản đồ tuỳ chỉnh (URL):</label>
+          <input type="url" id="settingCustomMapUrl" class="setting-input" placeholder="https://maps.example.com/embed">
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">Định vị GPS & Vị trí xe:</label>
+          <div class="gps-setting-actions">
+            <button class="btn-primary-sm" id="btnTriggerGpsNow">
+              <i class="fa-solid fa-location-crosshairs"></i> Cập Nhật Lại Vị Trí Ngay
+            </button>
+            <span class="text-sub text-xs" id="gpsCoordLabel">Tọa độ: Đang tải...</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">Tốc độ giới hạn cảnh báo (Speed Limit):</label>
+          <div class="speed-limit-options">
+            <button class="limit-chip" data-limit="40">40</button>
+            <button class="limit-chip active" data-limit="50">50</button>
+            <button class="limit-chip" data-limit="60">60</button>
+            <button class="limit-chip" data-limit="80">80</button>
+            <button class="limit-chip" data-limit="90">90</button>
+            <button class="limit-chip" data-limit="100">100</button>
+            <button class="limit-chip" data-limit="120">120</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">Chế độ hiển thị vị trí:</label>
+          <select id="settingGpsMode" class="setting-select">
+            <option value="real">Định vị GPS thực tế xe chạy (Thời gian thực)</option>
+            <option value="demo">Vị trí mô phỏng (Đường Trần Trọng Kim, Bình Thạnh, TP.HCM)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">Nhạc nền & YouTube khi lái xe:</label>
+          <div class="switch-row">
+            <span>Tự động phát bài hát tiếp theo</span>
+            <input type="checkbox" id="settingAutoNext" checked>
+          </div>
+          <div class="switch-row">
+            <span>Giữ màn hình luôn sáng khi mở app</span>
+            <input type="checkbox" id="settingKeepAwake" checked>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnBackSettingsBottom">
+          <i class="fa-solid fa-house"></i> Về Màn Hình Chính
+        </button>
+        <button class="btn-primary" id="btnSaveSettings">Lưu Cài Đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP DRAWER / APPS GRID MODAL -->
+  <div class="modal-backdrop" id="appsModal">
+    <div class="modal-dialog modal-apps">
+      <div class="modal-header">
+        <button class="btn-modal-back" id="btnBackAppsTop">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </button>
+        <h3><i class="fa-solid fa-table-cells-large me-2"></i> Danh Sách Ứng Dụng Xe</h3>
+        <button class="modal-close" id="btnCloseApps"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body apps-grid">
+        <div class="app-item" id="appLaunchHome">
+          <div class="app-item-icon bg-green"><i class="fa-solid fa-house"></i></div>
+          <span>Màn Hình Chính</span>
+        </div>
+        <div class="app-item" id="appLaunchGmaps">
+          <div class="app-item-icon bg-blue"><i class="fa-solid fa-location-dot"></i></div>
+          <span>Google Maps</span>
+        </div>
+        <div class="app-item" id="appLaunchYoutube">
+          <div class="app-item-icon bg-red"><i class="fa-brands fa-youtube"></i></div>
+          <span>YouTube</span>
+        </div>
+        <div class="app-item" id="appLaunchMusic">
+          <div class="app-item-icon bg-purple"><i class="fa-solid fa-music"></i></div>
+          <span>Nhạc Máy</span>
+        </div>
+        <div class="app-item" id="appLaunchRadio">
+          <div class="app-item-icon bg-orange"><i class="fa-solid fa-radio"></i></div>
+          <span>FM Radio</span>
+        </div>
+        <div class="app-item" id="appLaunchBluetooth">
+          <div class="app-item-icon bg-cyan"><i class="fa-brands fa-bluetooth-b"></i></div>
+          <span>Bluetooth</span>
+        </div>
+        <div class="app-item" id="appLaunchVoice">
+          <div class="app-item-icon bg-green"><i class="fa-solid fa-microphone"></i></div>
+          <span>Trợ Lý Giọng Nói</span>
+        </div>
+        <div class="app-item" id="appLaunchChrome">
+          <div class="app-item-icon bg-yellow"><i class="fa-brands fa-chrome"></i></div>
+          <span>Trình Duyệt</span>
+        </div>
+        <div class="app-item" id="appLaunchCarSettings">
+          <div class="app-item-icon bg-gray"><i class="fa-solid fa-sliders"></i></div>
+          <span>Cài Đặt Xe</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnBackAppsBottom">
+          <i class="fa-solid fa-house"></i> Về Màn Hình Chính
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden HTML5 Audio Element for Local Music Playback -->
+  <audio id="audioElement" preload="metadata"></audio>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
